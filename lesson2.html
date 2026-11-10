@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 2: Changing Permissions — Linux File Permissions</title>
+<style>
+  body { font: 16px/1.6 system-ui, -apple-system, Segoe UI, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .breadcrumb { color: #556; margin-bottom: 1.5rem; }
+  .breadcrumb a { color: #0d6a65; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.9rem; }
+  code { background: #eef7f6; padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.95em; }
+  pre code { background: none; padding: 0; }
+  .callout { border-left: 4px solid #0d6a65; background: #f6faf9; padding: 1rem 1.2rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0; }
+  .callout h3 { margin-top: 0; margin-bottom: 0.5rem; color: #0d6a65; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  th, td { border: 1px solid #c9d6d4; padding: 0.6rem 0.8rem; text-align: left; }
+  th { background: #eef7f6; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e3ecec; background: #0f191d; }
+    code { background: #1a2a2e; }
+    .callout { background: #152328; border-left-color: #62c4ba; }
+    .callout h3 { color: #62c4ba; }
+    th { background: #1a2a2e; }
+    td, th { border-color: #27383e; }
+  }
+  .socratic { border: 1px solid #c9d6d4; border-left: 4px solid #0d6a65; border-radius: 10px; padding: 14px 16px; margin: 20px 0; background: #f6faf9; color: #15242a; font: 16px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+  .socratic-label { font: 700 12px/1 system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #0d6a65; margin-bottom: 6px; }
+  @media (prefers-color-scheme: dark) {
+    .socratic { background: #152328; color: #e3ecec; border-color: #27383e; border-left-color: #62c4ba; }
+    .socratic-label { color: #62c4ba; }
+  }
+</style>
+</head>
+<body>
+<p class="breadcrumb"><a href="index.html">← Back to overview</a></p>
+<h1>Lesson 2: Changing Permissions</h1>
+
+<p>Now that you can read permissions, here's how to change them. Two tools: <code>chmod</code> (change mode) for permission bits, and <code>chown</code>/<code>chgrp</code> for owner and group.</p>
+
+<h2>chmod — symbolic mode</h2>
+<p>Syntax: <code>chmod [who][+|-|=][permissions] file</code></p>
+
+<table>
+<thead>
+<tr><th>Who</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td><code>u</code></td><td>User (owner)</td></tr>
+<tr><td><code>g</code></td><td>Group</td></tr>
+<tr><td><code>o</code></td><td>Others</td></tr>
+<tr><td><code>a</code></td><td>All (u+g+o)</td></tr>
+</tbody>
+</table>
+
+<p>Examples:</p>
+<pre><code>chmod u+x script.sh          # Owner gains execute
+chmod go-w notes.txt         # Group and others lose write
+chmod a=rX README.md         # Everyone gets read; directories get execute
+chmod ug+rw,o-rwx secret/    # Owner+group read/write, others nothing</code></pre>
+
+<div class="callout">
+<h3>Capital X</h3>
+<p><code>X</code> (capital) means "execute only if the file is a directory or already has execute for someone." Use <code>a+rX</code> to recursively make directories traversable without making regular files executable.</p>
+</div>
+
+<h2>chmod — numeric (octal) mode</h2>
+<p>Each digit = sum of bits: <code>4</code>=read, <code>2</code>=write, <code>1</code>=execute.</p>
+
+<table>
+<thead>
+<tr><th>Digit</th><th>Binary</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td>7</td><td>111</td><td>rwx</td></tr>
+<tr><td>6</td><td>110</td><td>rw-</td></tr>
+<tr><td>5</td><td>101</td><td>r-x</td></tr>
+<tr><td>4</td><td>100</td><td>r--</td></tr>
+<tr><td>0</td><td>000</td><td>---</td></tr>
+</tbody>
+</table>
+
+<p>Three digits = owner, group, others. A leading fourth digit is for special bits (Lesson 3).</p>
+
+<pre><code>chmod 755 script.sh     # rwxr-xr-x
+chmod 640 data.csv      # rw-r-----
+chmod 700 private/      # rwx------
+# chmod -R 644 public/  # BROKEN: applies 644 to directories too (removes execute)
+# Correct recursive pattern:
+chmod -R a+rX public/   # Files: add read; dirs: add read+execute
+# Or two steps:
+# chmod -R 644 public/ && find public/ -type d -exec chmod 755 {} \;</code></pre>
+
+<div class="callout">
+<h3>When to use which</h3>
+<p><strong>Symbolic</strong> is great for tweaking one thing (<code>u+x</code>). <strong>Numeric</strong> is faster when you know the exact final state (scripts, dotfiles, automation). Both are standard; pick what's clearer.</p>
+</div>
+
+<h2>chown and chgrp</h2>
+<pre><code>chown alex report.pdf           # Change owner to alex
+chown alex:students report.pdf  # Change owner and group
+chgrp students report.pdf       # Change group only
+chown -R alex:staff project/    # Recursive</code></pre>
+
+<p>Only root can change the owner. Any user can change the group of a file they own, but only to a group they belong to.</p>
+
+<h2>Umask — default permissions for new files</h2>
+<p><code>umask</code> masks <em>off</em> bits when files are created. Typical <code>umask 022</code> → new files get <code>644</code> (rw-r--r--), directories get <code>755</code> (rwxr-xr-x).</p>
+<pre><code>umask           # Show current (octal)
+umask 027       # New files: 640, new dirs: 750</code></pre>
+
+<div class="socratic" data-question="symbolic-vs-numeric">
+<p>You want to give the owner full access, the group read-only, and others no access. Write the <code>chmod</code> command both ways (symbolic and numeric). Which would you use in a script and why?</p>
+</div>
+
+<div class="socratic" data-question="umask-effect">
+<p>A student runs <code>umask 077</code> then creates a file and a directory. What permissions will each have? Explain how the umask value produces those results.</p>
+</div>
+
+<nav style="margin-top:2rem;display:flex;gap:1rem;">
+  <a href="lesson1.html">← Lesson 1: Understanding Permissions</a>
+  <a href="lesson3.html">Lesson 3: Special Permissions &amp; Practice →</a>
+</nav>
+
+<script src="socratic.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linux File Permissions — Workshop</title>
+<style>
+  body { font: 16px/1.6 system-ui, -apple-system, Segoe UI, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+  .subtitle { color: #556; margin-bottom: 2rem; }
+  nav a { display: inline-block; margin: 0.5rem 1rem 0.5rem 0; padding: 0.6rem 1rem; background: #0d6a65; color: #fff; text-decoration: none; border-radius: 6px; font-weight: 600; }
+  nav a:hover { background: #0a5550; }
+  .card { border: 1px solid #c9d6d4; border-radius: 10px; padding: 1.5rem; margin: 1.5rem 0; background: #f6faf9; }
+  .card h2 { margin-top: 0; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e3ecec; background: #0f191d; }
+    .card { background: #152328; border-color: #27383e; }
+    .subtitle { color: #94a7ac; }
+  }
+</style>
+</head>
+<body>
+<h1>Linux File Permissions</h1>
+<p class="subtitle">A three-lesson introduction for students in their first Unix course</p>
+
+<nav>
+  <a href="lesson1.html">Lesson 1: Understanding Permissions</a>
+  <a href="lesson2.html">Lesson 2: Changing Permissions</a>
+  <a href="lesson3.html">Lesson 3: Special Permissions &amp; Practice</a>
+</nav>
+
+<div class="card">
+<h2>What you'll learn</h2>
+<ul>
+  <li><strong>Lesson 1:</strong> Read the <code>ls -l</code> output, understand <code>rwx</code> for owner/group/others, and decode permission strings like <code>rwxr-xr--</code>.</li>
+  <li><strong>Lesson 2:</strong> Use <code>chmod</code> (symbolic and numeric), <code>chown</code>, and <code>chgrp</code> to change who can do what.</li>
+  <li><strong>Lesson 3:</strong> Setuid, setgid, sticky bit — when they matter and how to spot them. Plus a hands-on scenario to tie it together.</li>
+</ul>
+</div>
+
+<div class="card">
+<h2>How the check questions work</h2>
+<p>Each lesson has short "Check your understanding" boxes. Type an answer in your own words and press <strong>Check my answer</strong>. The workshop model will tell you what's right and ask one guiding question — it never gives the answer away.</p>
+<p>On the live site (while this Codespace runs), answers are checked in real time. On the published GitHub Pages copy, the questions appear with a note that checking works on the live site.</p>
+</div>
+
+<footer style="margin-top:3rem;color:#556;font-size:0.9rem;">
+  <p>Part of the OSU LLM Workshop. <a href="https://behrouzeftari.github.io/osu-llm-workshop-practice/">Permanent site</a></p>
+</footer>
+</body>
+</html>

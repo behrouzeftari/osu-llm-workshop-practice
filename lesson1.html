@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 1: Understanding Permissions — Linux File Permissions</title>
+<style>
+  body { font: 16px/1.6 system-ui, -apple-system, Segoe UI, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .breadcrumb { color: #556; margin-bottom: 1.5rem; }
+  .breadcrumb a { color: #0d6a65; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.9rem; }
+  code { background: #eef7f6; padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.95em; }
+  pre code { background: none; padding: 0; }
+  .callout { border-left: 4px solid #0d6a65; background: #f6faf9; padding: 1rem 1.2rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0; }
+  .callout h3 { margin-top: 0; margin-bottom: 0.5rem; color: #0d6a65; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  th, td { border: 1px solid #c9d6d4; padding: 0.6rem 0.8rem; text-align: left; }
+  th { background: #eef7f6; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e3ecec; background: #0f191d; }
+    code { background: #1a2a2e; }
+    .callout { background: #152328; border-left-color: #62c4ba; }
+    .callout h3 { color: #62c4ba; }
+    th { background: #1a2a2e; }
+    td, th { border-color: #27383e; }
+  }
+  .socratic { border: 1px solid #c9d6d4; border-left: 4px solid #0d6a65; border-radius: 10px; padding: 14px 16px; margin: 20px 0; background: #f6faf9; color: #15242a; font: 16px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+  .socratic-label { font: 700 12px/1 system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #0d6a65; margin-bottom: 6px; }
+  @media (prefers-color-scheme: dark) {
+    .socratic { background: #152328; color: #e3ecec; border-color: #27383e; border-left-color: #62c4ba; }
+    .socratic-label { color: #62c4ba; }
+  }
+</style>
+</head>
+<body>
+<p class="breadcrumb"><a href="index.html">← Back to overview</a></p>
+<h1>Lesson 1: Understanding Permissions</h1>
+
+<p>Every file and directory on a Linux system has <strong>permissions</strong> that control who can read, write, or execute it. When you run <code>ls -l</code>, the first column shows these permissions.</p>
+
+<h2>The <code>ls -l</code> output</h2>
+<pre><code>$ ls -l notes.txt
+-rw-r--r-- 1 alex students 1248 Nov  9 10:30 notes.txt</code></pre>
+
+<p>Breakdown of the first field (<code>-rw-r--r--</code>):</p>
+
+<table>
+<thead>
+<tr><th>Position</th><th>Character</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td><code>-</code></td><td>File type (<code>-</code> = regular file, <code>d</code> = directory, <code>l</code> = symlink)</td></tr>
+<tr><td>2–4</td><td><code>rw-</code></td><td>Owner permissions: read, write, no execute</td></tr>
+<tr><td>5–7</td><td><code>r--</code></td><td>Group permissions: read only</td></tr>
+<tr><td>8–10</td><td><code>r--</code></td><td>Others (everyone else): read only</td></tr>
+</tbody>
+</table>
+
+<h2>The three permission bits</h2>
+
+<table>
+<thead>
+<tr><th>Letter</th><th>Name</th><th>On a file</th><th>On a directory</th></tr>
+</thead>
+<tbody>
+<tr><td><code>r</code></td><td>Read</td><td>View file contents</td><td>List directory contents (<code>ls</code>)</td></tr>
+<tr><td><code>w</code></td><td>Write</td><td>Modify file contents</td><td>Create/delete/rename files inside</td></tr>
+<tr><td><code>x</code></td><td>Execute</td><td>Run as a program/script</td><td>Enter directory (<code>cd</code>), access files within</td></tr>
+</tbody>
+</table>
+
+<div class="callout">
+<h3>Key insight</h3>
+<p>Execute on a directory is <strong>not</strong> about running the directory — it's about <em>traversing</em> it. Without <code>x</code> on a directory, you can't <code>cd</code> into it or reach files inside, even if you have read permission on those files.</p>
+</div>
+
+<h2>Who are "owner", "group", and "others"?</h2>
+<ul>
+<li><strong>Owner</strong> — the user who created the file (or the user assigned by <code>chown</code>)</li>
+<li><strong>Group</strong> — a named group of users; all members share these permissions</li>
+<li><strong>Others</strong> — everyone else on the system</li>
+</ul>
+
+<p>Use <code>ls -l</code> to see owner and group names. Use <code>id</code> to see your own user and groups.</p>
+
+<h2>Practice: decode these</h2>
+<p>For each string, say who can do what:</p>
+<ol>
+<li><code>drwxr-x---</code></li>
+<li><code>-rwx------</code></li>
+<li><code>-rw-rw-rw-</code></li>
+<li><code>lrwxrwxrwx</code></li>
+</ol>
+
+<div class="socratic" data-question="perm-decode">
+<p>For <code>drwxr-x---</code>, explain in your own words: what type of thing is this, and what can the owner, group members, and others do with it?</p>
+</div>
+
+<div class="socratic" data-question="dir-execute">
+<p>Why does a directory need the execute (<code>x</code>) bit for someone to <code>cd</code> into it or read a file inside it, even if they have read (<code>r</code>) on the directory?</p>
+</div>
+
+<nav style="margin-top:2rem;display:flex;gap:1rem;">
+  <a href="index.html">← Overview</a>
+  <a href="lesson2.html">Lesson 2: Changing Permissions →</a>
+</nav>
+
+<script src="socratic.js" defer></script>
+</body>
+</html>

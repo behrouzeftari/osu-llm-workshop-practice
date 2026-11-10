@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson 3: Special Permissions &amp; Practice — Linux File Permissions</title>
+<style>
+  body { font: 16px/1.6 system-ui, -apple-system, Segoe UI, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+  .breadcrumb { color: #556; margin-bottom: 1.5rem; }
+  .breadcrumb a { color: #0d6a65; text-decoration: none; }
+  .breadcrumb a:hover { text-decoration: underline; }
+  pre { background: #1e1e1e; color: #d4d4d4; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 0.9rem; }
+  code { background: #eef7f6; padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.95em; }
+  pre code { background: none; padding: 0; }
+  .callout { border-left: 4px solid #0d6a65; background: #f6faf9; padding: 1rem 1.2rem; margin: 1.5rem 0; border-radius: 0 8px 8px 0; }
+  .callout h3 { margin-top: 0; margin-bottom: 0.5rem; color: #0d6a65; }
+  table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+  th, td { border: 1px solid #c9d6d4; padding: 0.6rem 0.8rem; text-align: left; }
+  th { background: #eef7f6; }
+  .scenario { background: #f0f7f6; border: 1px solid #b5d0cc; border-radius: 8px; padding: 1.2rem; margin: 1.5rem 0; }
+  .scenario h3 { margin-top: 0; color: #0d6a65; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e3ecec; background: #0f191d; }
+    code { background: #1a2a2e; }
+    .callout { background: #152328; border-left-color: #62c4ba; }
+    .callout h3 { color: #62c4ba; }
+    th { background: #1a2a2e; }
+    td, th { border-color: #27383e; }
+    .scenario { background: #132a2e; border-color: #2a4a4e; }
+    .scenario h3 { color: #62c4ba; }
+  }
+  .socratic { border: 1px solid #c9d6d4; border-left: 4px solid #0d6a65; border-radius: 10px; padding: 14px 16px; margin: 20px 0; background: #f6faf9; color: #15242a; font: 16px/1.5 system-ui, -apple-system, Segoe UI, sans-serif; }
+  .socratic-label { font: 700 12px/1 system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #0d6a65; margin-bottom: 6px; }
+  @media (prefers-color-scheme: dark) {
+    .socratic { background: #152328; color: #e3ecec; border-color: #27383e; border-left-color: #62c4ba; }
+    .socratic-label { color: #62c4ba; }
+  }
+</style>
+</head>
+<body>
+<p class="breadcrumb"><a href="index.html">← Back to overview</a></p>
+<h1>Lesson 3: Special Permissions &amp; Practice</h1>
+
+<p>Beyond the basic <code>rwx</code> bits, Linux has three special permission bits that change how programs run or how directories behave.</p>
+
+<h2>The three special bits</h2>
+
+<table>
+<thead>
+<tr><th>Name</th><th>Symbol</th><th>Octal</th><th>On a file</th><th>On a directory</th></tr>
+</thead>
+<tbody>
+<tr><td>Setuid</td><td><code>s</code> in owner execute</td><td>4000</td><td>Run with <strong>owner's</strong> privileges</td><td>— (ignored)</td></tr>
+<tr><td>Setgid</td><td><code>s</code> in group execute</td><td>2000</td><td>Run with <strong>group's</strong> privileges</td><td>New files inherit <strong>directory's group</strong></td></tr>
+<tr><td>Sticky bit</td><td><code>t</code> in others execute</td><td>1000</td><td>— (obsolete)</td><td>Only owner can delete/rename files inside</td></tr>
+</tbody>
+</table>
+
+<h2>Setuid — run as the file's owner</h2>
+<p>When a file has setuid and is executed, the process runs with the <strong>file owner's UID</strong>, not the runner's. Classic example: <code>/usr/bin/passwd</code> (owned by root) lets users change their own password by briefly running as root.</p>
+<pre><code>$ ls -l /usr/bin/passwd
+-rwsr-xr-x 1 root root 68208 Jan 12  2024 /usr/bin/passwd
+            ^--- 's' means setuid + execute</code></pre>
+
+<div class="callout">
+<h3>Security note</h3>
+<p>Setuid programs are a favorite attack target. Only use when necessary. Prefer <code>sudo</code> or capabilities for custom tools. Many distros now use capabilities instead of setuid for things like <code>ping</code>.</p>
+</div>
+
+<h2>Setgid on directories — shared group workspace</h2>
+<p>When a directory has setgid, <strong>new files created inside inherit the directory's group</strong>, not the creator's primary group. This is the standard way to make a shared folder for a team.</p>
+<pre><code># Set up a shared project folder
+mkdir /projects/web
+chgrp developers /projects/web
+chmod 2775 /projects/web   # 2 = setgid, 775 = rwxrwxr-x
+
+$ ls -ld /projects/web
+drwxrwsr-x 2 root developers 4096 Nov  9 11:00 /projects/web
+            ^--- 's' in group position = setgid + execute</code></pre>
+
+<p>Now any developer in the <code>developers</code> group can create files, and those files will automatically belong to the <code>developers</code> group.</p>
+
+<h2>Sticky bit — /tmp protection</h2>
+<p>On a world-writable directory like <code>/tmp</code>, the sticky bit prevents users from deleting or renaming <strong>each other's</strong> files. They can only remove their own.</p>
+<pre><code>$ ls -ld /tmp
+drwxrwxrwt 14 root root 4096 Nov  9 11:30 /tmp
+               ^--- 't' = sticky + execute for others</code></pre>
+
+<h2>Setting special bits with chmod</h2>
+<pre><code>chmod u+s program         # Setuid
+chmod g+s directory       # Setgid on directory
+chmod +t directory        # Sticky bit
+chmod 4755 program        # Numeric: 4=setuid, 2=setgid, 1=sticky
+chmod 2775 shared/        # Setgid + rwxrwxr-x
+chmod 1777 temp/          # Sticky + rwxrwxrwx</code></pre>
+
+<div class="callout">
+<h3>Capital S / T</h3>
+<p>If you see <code>S</code> or <code>T</code> (capital), the special bit is set but the corresponding execute bit is <strong>not</strong>. Example: <code>chmod u+s file</code> on a file without owner execute → shows <code>S</code>. This is usually a mistake — fix with <code>chmod u+x</code>.</p>
+</div>
+
+<h2>Hands-on scenario: The course dropbox</h2>
+
+<div class="scenario">
+<h3>Scenario</h3>
+<p>You're a TA for a course. Students need to submit assignments to a shared folder. Requirements:</p>
+<ol>
+<li>Students can create files in the folder.</li>
+<li>Students <strong>cannot</strong> read, modify, or delete each other's submissions.</li>
+<li>TAs (group <code>tas</code>) can read all submissions.</li>
+<li>The instructor (user <code>prof</code>) owns the folder and has full access.</li>
+</ol>
+
+<h3>Solution</h3>
+<pre><code># Create and set ownership
+mkdir /course/dropbox
+chown prof:tas /course/dropbox
+
+# Permissions:
+# prof (owner): rwx
+# tas (group):  r-x  (read/traverse, no write)
+# students (others): -wx (create/traverse, NO read, NO delete others)
+# sticky bit: prevent students deleting each other's files
+chmod 1753 /course/dropbox
+
+# Verify
+$ ls -ld /course/dropbox
+drwxr-x-wt 2 prof tas 4096 Nov  9 12:00 /course/dropbox
+</code></pre>
+
+<p>Why this works:</p>
+<ul>
+<li><code>owner = rwx</code> (7): prof has full access.</li>
+<li><code>group = r-x</code> (5): tas can list (<code>r</code>) and enter (<code>x</code>) the directory to read submissions.</li>
+<li><code>others = -wx</code> (3): students can enter directory (<code>x</code>) and create files (<code>w</code>), but cannot list contents (no <code>r</code>). Note: on Linux, <code>ls</code> without read permission still shows filenames if you have execute — this is kernel behavior; true secrecy needs other tools.</li>
+<li>Sticky bit (<code>t</code>, the leading 1): students can't delete/rename files they don't own.</li>
+</ul>
+
+<div class="callout">
+<h3>Verified behavior</h3>
+<p>Tested in a disposable directory: <code>chmod 1753</code> produces <code>drwxr-x-wt</code> (group gets <code>r-x</code>). The original <code>1733</code> gave group <code>-wx</code> (3), not <code>r-x</code> (5). Also, <code>chmod -R 644</code> breaks directory traversal — use <code>chmod -R a+rX</code> instead.</p>
+</div>
+</div>
+
+<div class="socratic" data-question="setgid-purpose">
+<p>In the shared project folder example, what problem does the setgid bit on the directory solve? What would happen to new files' group ownership without it?</p>
+</div>
+
+<div class="socratic" data-question="dropbox-design">
+<p>In the dropbox scenario, why does "others" need execute (<code>x</code>) but not read (<code>r</code>) on the directory? What would break if you removed execute? What would break if you added read?</p>
+</div>
+
+<nav style="margin-top:2rem;display:flex;gap:1rem;">
+  <a href="lesson2.html">← Lesson 2: Changing Permissions</a>
+  <a href="index.html">Back to overview →</a>
+</nav>
+
+<script src="socratic.js" defer></script>
+</body>
+</html>
