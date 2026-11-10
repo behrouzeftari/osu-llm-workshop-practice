@@ -21,6 +21,19 @@ program found that quote, and a check:
     UNSUPPORTED  the model gave a value but no quote to back it: treat it as unchecked
 Found means the sentence is there, not that it supports the value: read one row.
 A document that fails is a row with an error, never dropped.
+
+Sample run from the repository root:
+
+    python 06_build/table/build_table.py 06_build/table/sample --out results/build-sample
+
+Example output from one run:
+
+    chahal2020cumulative.pdf ...
+    1 rows -> results/build-sample/table.csv; 1 of 2 quotes found word for word.
+    1 model calls, about $0.0127
+
+Quote counts, model calls, and cost may vary between runs.
+
 """
 import csv
 import json

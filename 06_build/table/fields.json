@@ -1,7 +1,7 @@
 {
   "_about": "One entry per column of your table: the column name, then the sentence the model reads to fill it. Keep 'or not stated'. Change these to what you read for every week.",
-  "question": "The research question or aim, or 'not stated'.",
-  "method": "How the study was done: design, data, analysis, or 'not stated'.",
-  "sample": "What was studied and how many, with units, or 'not stated'.",
-  "finding": "The main result, with the numbers the document gives, or 'not stated'."
+  "aims": "The specific aims or research objectives of the grant proposal, or 'not stated'.",
+  "budget_total": "The total budget amount requested in the grant proposal, with currency, or 'not stated'.",
+  "duration": "The duration or project period of the grant proposal (e.g., years, months), or 'not stated'.",
+  "funder": "The funding agency or organization the grant proposal is submitted to, or 'not stated'."
 }
